@@ -59,7 +59,9 @@ publishing {
     repositories {
         maven {
             name = "OSSRH"
-            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
             credentials {
                 username = project.findProperty("mavenCentralUsername") as String? ?: ""
                 password = project.findProperty("mavenCentralPassword") as String? ?: ""
@@ -69,5 +71,14 @@ publishing {
 }
 
 signing {
-    sign(publishing.publications["maven"])
+    // Only sign if we have the signing keys (not on JitPack)
+    val canSign = project.hasProperty("signing.keyId") &&
+                  project.hasProperty("signing.password") &&
+                  project.hasProperty("signing.secretKeyRingFile") &&
+                  file(project.property("signing.secretKeyRingFile") as String).exists()
+
+    isRequired = canSign
+    if (canSign) {
+        sign(publishing.publications["maven"])
+    }
 }
