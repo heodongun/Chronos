@@ -1,0 +1,21 @@
+# Gradle Build Configuration
+# Enable the build cache to save time by reusing outputs produced by other successful builds.
+# https://docs.gradle.org/current/userguide/build_cache.html
+org.gradle.caching=true
+# Enable the configuration cache to reuse the build configuration and enable parallel task execution.
+# (Note that some plugins may not yet be compatible with the configuration cache.)
+# https://docs.gradle.org/current/userguide/configuration_cache.html
+org.gradle.configuration-cache=true
+
+
+# Maven Central Publishing Credentials
+# Get these from https://central.sonatype.com/
+mavenCentralUsername=YOUR_USERNAME_HERE
+mavenCentralPassword=YOUR_PASSWORD_HERE
+
+# GPG Signing Configuration
+# Generate GPG keys: gpg --gen-key
+# Export secret key: gpg --export-secret-keys YOUR_KEY_ID > ~/.gnupg/secring.gpg
+signing.keyId=YOUR_KEY_ID_HERE
+signing.password=YOUR_GPG_PASSWORD_HERE
+signing.secretKeyRingFile=/path/to/.gnupg/secring.gpg
