@@ -1,85 +1,261 @@
-# autoAddJosa
+# JSONRepair
 
-A lightweight Kotlin library that automatically adds the correct Korean particle (Josa) based on the final consonant.
+A lightweight Kotlin library that repairs malformed JSON strings, especially useful for parsing outputs from Large Language Models (LLMs).
 
-단어 끝 받침에 따라 올바른 조사를 자동으로 붙여주는 Kotlin 경량 라이브러리입니다.
+망가진 JSON 형식을 자동으로 복구하는 Kotlin 경량 라이브러리입니다. LLM 출력 파싱에 특히 유용합니다.
 
 ---
 
 ## Features
 
-- Automatically adds correct Josa (은/는, 이/가, 을/를, 와/과, 으로/로)
-- Kotlin extension function 기반의 간결한 사용법
-- Enum 타입 안전성 — 오타 없는 Josa 열거형
-- Batchim(받침) 규칙 완전 지원 (ㄹ 받침 예외 포함)
-- 한국어 챗봇, 텍스트 생성, 현지화(Localization)에 유용
+- **Automatic JSON Repair**: Fixes common JSON formatting errors
+- **Extension Function API**: Simple and intuitive Kotlin DSL
+- **LLM Output Parsing**: Designed for incomplete or malformed JSON from AI models
+- **Multiple Parsing Modes**: Standard and lenient parsing options
+- **Zero Dependencies**: Lightweight library with no external dependencies
+- **Comprehensive Error Handling**: Repairs various JSON syntax issues
+
+### Supported Repairs
+
+✅ Missing or misplaced quotes
+✅ Single quotes to double quotes conversion
+✅ Missing commas between elements
+✅ Trailing commas removal
+✅ Missing closing brackets/braces
+✅ Unquoted object keys
+✅ Comments in JSON (single-line `//` and multi-line `/* */`)
+✅ Boolean/null case fixing (`True` → `true`, `False` → `false`, `None` → `null`)
+✅ Extra commas removal
+✅ Escape character fixes
 
 ---
 
 ## Installation
 
 ### Using Gradle (Groovy)
-```kotlin
+```groovy
 repositories {
-    maven { url = uri("https://jitpack.io") }
+    mavenCentral()
 }
 
 dependencies {
-    implementation("io.github.heodongun:1.0.0")
+    implementation 'io.github.heodongun:jsonrepair:1.0.0'
 }
 ```
 
 ### Using Gradle Kotlin DSL
 ```kotlin
 repositories {
-    maven("https://jitpack.io")
+    mavenCentral()
 }
 
 dependencies {
-    implementation("com.github.plutodesu:autoAddJosa:1.0.0")
+    implementation("io.github.heodongun:jsonrepair:1.0.0")
 }
+```
+
+### Using Maven
+```xml
+<dependency>
+    <groupId>io.github.heodongun</groupId>
+    <artifactId>jsonrepair</artifactId>
+    <version>1.0.0</version>
+</dependency>
 ```
 
 ---
 
 ## Usage
 
+### Basic Repair
+
 ```kotlin
-import io.github.plutodesu.autoaddjosa.Josa
-import io.github.plutodesu.autoaddjosa.josa
+import io.github.heodongun.jsonrepair.repairJson
+import io.github.heodongun.jsonrepair.repairAndParse
 
 fun main() {
-    println("사과".josa(Josa.은는))   // 사과는
-    println("밥".josa(Josa.은는))     // 밥은
-    println("책".josa(Josa.이가))     // 책이
-    println("바나나".josa(Josa.이가)) // 바나나가
-    println("문자열".josa(Josa.을를)) // 문자열을
-    println("학교".josa(Josa.와과))   // 학교와
-    println("산".josa(Josa.으로))     // 산으로
-    println("길".josa(Josa.으로))     // 길로 (ㄹ 받침 특례)
+    // Repair malformed JSON string
+    val malformed = "{name: 'John', age: 30}"
+    val repaired = malformed.repairJson()
+    println(repaired)  // {"name": "John", "age": 30}
+}
+```
+
+### Repair and Parse
+
+```kotlin
+import io.github.heodongun.jsonrepair.repairAndParse
+import kotlinx.serialization.json.*
+
+fun main() {
+    val malformed = "{'name': 'John', 'age': 30, 'active': True}"
+
+    // Repair and parse to JsonElement
+    val result: JsonElement? = malformed.repairAndParse()
+
+    if (result is JsonObject) {
+        println(result["name"]?.jsonPrimitive?.content)  // John
+        println(result["age"]?.jsonPrimitive?.int)       // 30
+        println(result["active"]?.jsonPrimitive?.boolean) // true
+    }
+}
+```
+
+### Lenient Parsing
+
+```kotlin
+import io.github.heodongun.jsonrepair.repairAndParseLenient
+
+fun main() {
+    // For very complex or unusual JSON
+    val malformed = "{name: 'John', age: 30"  // Missing closing brace
+
+    val result = malformed.repairAndParseLenient()
+    result?.let {
+        println("Successfully parsed complex JSON")
+    }
+}
+```
+
+### LLM Output Parsing
+
+```kotlin
+import io.github.heodongun.jsonrepair.repairAndParse
+
+fun parseLLMResponse(llmOutput: String) {
+    // LLM often generates incomplete JSON
+    val incomplete = """
+        {
+          "response": "Here is the data",
+          "items": [
+            {"id": 1, "name": "Item 1"},
+            {"id": 2, "name": "Item 2"
+    """.trimIndent()
+
+    val result = incomplete.repairAndParse()
+    result?.let { json ->
+        println("Parsed LLM output successfully")
+        // Process the repaired JSON
+    }
 }
 ```
 
 ---
 
-## Supported Josa List
+## API Reference
 
-| Enum | Example | Output |
-|------|----------|---------|
-| `Josa.은는` | `"사과".josa(Josa.은는)` | `사과는` |
-| `Josa.이가` | `"책".josa(Josa.이가)` | `책이` |
-| `Josa.을를` | `"문자열".josa(Josa.을를)` | `문자열을` |
-| `Josa.와과` | `"학교".josa(Josa.와과)` | `학교와` |
-| `Josa.으로` | `"길".josa(Josa.으로)` | `길로` |
+### Extension Functions
+
+#### `String.repairJson(): String`
+Repairs a malformed JSON string and returns the repaired version.
+
+```kotlin
+val repaired = malformedJson.repairJson()
+```
+
+#### `String.repairAndParse(): JsonElement?`
+Repairs and parses JSON string to `JsonElement`. Returns `null` if parsing fails.
+
+```kotlin
+val json: JsonElement? = malformedJson.repairAndParse()
+```
+
+#### `String.repairAndParseLenient(): JsonElement?`
+Repairs and parses JSON with lenient mode enabled. More forgiving for unusual cases.
+
+```kotlin
+val json: JsonElement? = malformedJson.repairAndParseLenient()
+```
+
+---
+
+## Examples
+
+### Example 1: Missing Quotes
+```kotlin
+val input = "{name: John, age: 30}"
+val output = input.repairJson()
+// Result: {"name": "John", "age": 30}
+```
+
+### Example 2: Single Quotes
+```kotlin
+val input = "{'name': 'John', 'city': 'Seoul'}"
+val output = input.repairJson()
+// Result: {"name": "John", "city": "Seoul"}
+```
+
+### Example 3: Trailing Commas
+```kotlin
+val input = """{"name": "John", "age": 30,}"""
+val output = input.repairJson()
+// Result: {"name": "John", "age": 30}
+```
+
+### Example 4: Missing Brackets
+```kotlin
+val input = """{"items": [1, 2, 3"""
+val output = input.repairJson()
+// Result: {"items": [1, 2, 3]}
+```
+
+### Example 5: Comments
+```kotlin
+val input = """
+{
+    // User information
+    "name": "John",
+    /* Age field */
+    "age": 30
+}
+"""
+val output = input.repairJson()
+// Result: {"name": "John", "age": 30}
+```
+
+### Example 6: Python-style Boolean/None
+```kotlin
+val input = """{"active": True, "deleted": False, "value": None}"""
+val output = input.repairJson()
+// Result: {"active": true, "deleted": false, "value": null}
+```
 
 ---
 
 ## Technical Details
 
-- Written in pure Kotlin
-- Compatible with JVM, Android, Kotlin Multiplatform (JVM Target)
-- Zero dependencies, extremely lightweight (<10KB)
-- Unicode-based consonant detection for precise rule matching
+- **Language**: Kotlin 2.0+
+- **Platform**: JVM (Java 21+)
+- **Serialization**: kotlinx-serialization-json
+- **Build System**: Gradle 8.14
+- **License**: Apache License 2.0
+
+---
+
+## Comparison with Python json-repair
+
+This library is inspired by the Python [json-repair](https://github.com/mangiucugna/json_repair) library but implemented natively in Kotlin with idiomatic Kotlin APIs.
+
+| Feature | JSONRepair (Kotlin) | json-repair (Python) |
+|---------|---------------------|----------------------|
+| Extension Functions | ✅ | ❌ |
+| kotlinx-serialization | ✅ | ❌ |
+| Type Safety | ✅ | Partial |
+| Lenient Parsing | ✅ | ✅ |
+| Comment Removal | ✅ | ✅ |
+| Quote Fixing | ✅ | ✅ |
+
+---
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ---
 
@@ -95,11 +271,35 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 ```
 
 ---
 
 ## Author
 
-Created by [heodongun](https://github.com/heodongun)  
-Inspired by the beauty of the Korean language.
+Created by [heodongun](https://github.com/heodongun)
+Inspired by Python's json-repair library
+
+---
+
+## Acknowledgments
+
+- Inspired by [mangiucugna/json_repair](https://github.com/mangiucugna/json_repair)
+- Built with [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization)
+
+---
+
+## Changelog
+
+### Version 1.0.0 (2025-01-21)
+- Initial release
+- Core JSON repair functionality
+- Extension function API
+- Comprehensive test coverage
+- Maven Central distribution
