@@ -32,36 +32,48 @@ A lightweight Kotlin library that repairs malformed JSON strings, especially use
 
 ## Installation
 
-### Using Gradle (Groovy)
+### Using JitPack (Recommended)
+
+#### Gradle (Groovy)
 ```groovy
 repositories {
-    mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation 'io.github.heodongun:jsonrepair:1.0.0'
+    implementation 'com.github.heodongun:JSONRepair:v1.0.0'
 }
 ```
 
-### Using Gradle Kotlin DSL
+#### Gradle Kotlin DSL
 ```kotlin
 repositories {
-    mavenCentral()
+    maven("https://jitpack.io")
 }
 
 dependencies {
-    implementation("io.github.heodongun:jsonrepair:1.0.0")
+    implementation("com.github.heodongun:JSONRepair:v1.0.0")
 }
 ```
 
-### Using Maven
+#### Maven
 ```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
 <dependency>
-    <groupId>io.github.heodongun</groupId>
-    <artifactId>jsonrepair</artifactId>
-    <version>1.0.0</version>
+    <groupId>com.github.heodongun</groupId>
+    <artifactId>JSONRepair</artifactId>
+    <version>v1.0.0</version>
 </dependency>
 ```
+
+### Using Maven Central (Coming Soon)
+Maven Central distribution is pending namespace verification.
 
 ---
 
