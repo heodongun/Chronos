@@ -229,4 +229,119 @@ class JSONRepairTest {
             assertTrue(result is JsonObject)
         }
     }
+
+    @Test
+    fun `test simple array with missing closing bracket`() {
+        val malformed = """{"items": [1, 2, 3"""
+        val repaired = malformed.repairJson()
+        val expected = """{"items": [1, 2, 3]}"""
+
+        assertEquals(expected, repaired)
+
+        val result = Json.parseToJsonElement(repaired)
+        assertNotNull(result)
+        assertTrue(result is JsonObject)
+
+        val items = result.jsonObject["items"]
+        assertNotNull(items)
+        assertTrue(items is JsonArray)
+        assertEquals(3, items.jsonArray.size)
+        assertEquals(1, items.jsonArray[0].jsonPrimitive.int)
+        assertEquals(2, items.jsonArray[1].jsonPrimitive.int)
+        assertEquals(3, items.jsonArray[2].jsonPrimitive.int)
+    }
+
+    @Test
+    fun `test nested structure with missing multiple brackets`() {
+        val malformed = """{"outer": {"inner": [1, 2, {"deep": "value" """
+        val repaired = malformed.repairJson()
+
+        // Verify brackets are properly balanced
+        assertTrue(repaired.count { it == '{' } == repaired.count { it == '}' })
+        assertTrue(repaired.count { it == '[' } == repaired.count { it == ']' })
+
+        val result = Json.parseToJsonElement(repaired)
+        assertNotNull(result)
+        assertTrue(result is JsonObject)
+    }
+
+    @Test
+    fun `test array at root level with missing bracket`() {
+        val malformed = """[1, 2, 3, 4, 5"""
+        val repaired = malformed.repairJson()
+        val expected = """[1, 2, 3, 4, 5]"""
+
+        assertEquals(expected, repaired)
+
+        val result = Json.parseToJsonElement(repaired)
+        assertNotNull(result)
+        assertTrue(result is JsonArray)
+        assertEquals(5, result.jsonArray.size)
+    }
+
+    @Test
+    fun `test object inside array with missing brackets`() {
+        val malformed = """{"data": [{"id": 1}, {"id": 2"""
+        val repaired = malformed.repairJson()
+
+        // Verify brackets are properly balanced
+        assertTrue(repaired.count { it == '{' } == repaired.count { it == '}' })
+        assertTrue(repaired.count { it == '[' } == repaired.count { it == ']' })
+
+        val result = Json.parseToJsonElement(repaired)
+        assertNotNull(result)
+        assertTrue(result is JsonObject)
+
+        val data = result.jsonObject["data"]
+        assertNotNull(data)
+        assertTrue(data is JsonArray)
+        assertEquals(2, data.jsonArray.size)
+    }
+
+    @Test
+    fun `test deeply nested arrays with missing brackets`() {
+        val malformed = """[[[1, 2, [3, 4"""
+        val repaired = malformed.repairJson()
+
+        // Verify all brackets are balanced
+        assertEquals(
+            malformed.count { it == '[' },
+            repaired.count { it == ']' }
+        )
+
+        val result = Json.parseToJsonElement(repaired)
+        assertNotNull(result)
+        assertTrue(result is JsonArray)
+    }
+
+    @Test
+    fun `test mixed nesting with missing closing brackets`() {
+        val malformed = """{"a": [1, {"b": [2, 3"""
+        val repaired = malformed.repairJson()
+
+        // Check proper bracket balancing
+        assertTrue(repaired.count { it == '{' } == repaired.count { it == '}' })
+        assertTrue(repaired.count { it == '[' } == repaired.count { it == ']' })
+
+        val result = Json.parseToJsonElement(repaired)
+        assertNotNull(result)
+        assertTrue(result is JsonObject)
+    }
+
+    @Test
+    fun `test object with array that has only opening bracket`() {
+        val malformed = """{"list": ["""
+        val repaired = malformed.repairJson()
+
+        assertEquals("""{"list": []}""", repaired)
+
+        val result = Json.parseToJsonElement(repaired)
+        assertNotNull(result)
+        assertTrue(result is JsonObject)
+
+        val list = result.jsonObject["list"]
+        assertNotNull(list)
+        assertTrue(list is JsonArray)
+        assertEquals(0, list.jsonArray.size)
+    }
 }

@@ -158,26 +158,24 @@ private fun fixUnquotedKeys(json: String): String {
 
 private fun fixMissingBrackets(json: String): String {
     var result = json
-    var openBraces = 0
-    var openBrackets = 0
+    val stack = mutableListOf<Char>()
 
+    // Track opening brackets/braces and their order
     for (char in result) {
         when (char) {
-            '{' -> openBraces++
-            '}' -> openBraces--
-            '[' -> openBrackets++
-            ']' -> openBrackets--
+            '{' -> stack.add('{')
+            '}' -> if (stack.lastOrNull() == '{') stack.removeLastOrNull()
+            '[' -> stack.add('[')
+            ']' -> if (stack.lastOrNull() == '[') stack.removeLastOrNull()
         }
     }
 
-    // Add missing closing braces
-    repeat(openBraces) {
-        result += "}"
-    }
-
-    // Add missing closing brackets
-    repeat(openBrackets) {
-        result += "]"
+    // Add missing closing brackets/braces in reverse order (LIFO)
+    while (stack.isNotEmpty()) {
+        when (stack.removeLast()) {
+            '{' -> result += "}"
+            '[' -> result += "]"
+        }
     }
 
     return result
@@ -230,3 +228,5 @@ private fun removeExtraCommas(json: String): String {
 
     return result
 }
+
+
