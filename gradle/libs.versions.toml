@@ -7,6 +7,7 @@ kotlin = "2.2.0"
 kotlinxDatetime = "0.6.2"
 kotlinxSerializationJSON = "1.8.1"
 kotlinxCoroutines = "1.10.2"
+vanniktechMavenPublish = "0.30.0"
 
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -20,3 +21,4 @@ kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutine
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+vanniktechMavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }

@@ -16,7 +16,8 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
-// Include only the jsonrepair module
+// Include modules
 include(":jsonrepair")
+include(":chronos")
 
 rootProject.name = "JSONRepair"
