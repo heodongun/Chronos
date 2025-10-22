@@ -4,6 +4,8 @@ A powerful Kotlin DateTime library inspired by Python's [Pendulum](https://pendu
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.0-blue.svg)](https://kotlinlang.org)
+[![JitPack](https://jitpack.io/v/heodongun/Chronos.svg)](https://jitpack.io/#heodongun/Chronos)
+[![Release](https://img.shields.io/github/v/release/heodongun/Chronos)](https://github.com/heodongun/Chronos/releases)
 
 ## ✨ Features
 
@@ -23,26 +25,41 @@ A powerful Kotlin DateTime library inspired by Python's [Pendulum](https://pendu
 ### Gradle (Kotlin DSL)
 
 ```kotlin
+repositories {
+    maven { url = uri("https://jitpack.io") }
+}
+
 dependencies {
-    implementation("io.github.heodongun:chronos:1.0.0")
+    implementation("com.github.heodongun:Chronos:v1.0.0")
 }
 ```
 
 ### Gradle (Groovy)
 
 ```groovy
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
 dependencies {
-    implementation 'io.github.heodongun:chronos:1.0.0'
+    implementation 'com.github.heodongun:Chronos:v1.0.0'
 }
 ```
 
 ### Maven
 
 ```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
 <dependency>
-    <groupId>io.github.heodongun</groupId>
-    <artifactId>chronos</artifactId>
-    <version>1.0.0</version>
+    <groupId>com.github.heodongun</groupId>
+    <artifactId>Chronos</artifactId>
+    <version>v1.0.0</version>
 </dependency>
 ```
 
